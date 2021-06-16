@@ -839,7 +839,7 @@ def main():
         updater.start_polling()
 
     elif MODE == "prod":
-        PORT = int(os.environ.get('PORT',5000))
+        PORT = int(os.environ.get('PORT',8443))
         HEROKU_APP_NAME = os.environ.get('HEROKU_APP_NAME')
         updater.start_webhook(listen='0.0.0.0',
                               port=int(PORT),
