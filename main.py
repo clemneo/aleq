@@ -843,8 +843,8 @@ def main():
         HEROKU_APP_NAME = os.environ.get('HEROKU_APP_NAME')
         updater.start_webhook(listen='0.0.0.0',
                               port=int(PORT),
-                              url_path=TOKEN)
-        updater.bot.set_webhook("https://{}.herokuapp.com/{}".format(HEROKU_APP_NAME, TOKEN))
+                              url_path=TOKEN,
+                              webhook_url="https://{}.herokuapp.com/{}".format(HEROKU_APP_NAME, TOKEN))
     else:
         logger.error("No MODE specified... Remember to define MODE as 'dev' or 'prod' in your environment variables!")
         sys.exit(1)
