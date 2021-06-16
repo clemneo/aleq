@@ -840,11 +840,10 @@ def main():
 
     elif MODE == "prod":
         PORT = int(os.environ.get('PORT',8443))
-        HEROKU_APP_NAME = os.environ.get('HEROKU_APP_NAME')
         updater.start_webhook(listen='0.0.0.0',
                               port=int(PORT),
                               url_path=TOKEN,
-                              webhook_url="https://{}.herokuapp.com/{}".format(HEROKU_APP_NAME, TOKEN))
+                              webhook_url="https://powerful-sierra-80016.herokuapp.com/" + TOKEN)
     else:
         logger.error("No MODE specified... Remember to define MODE as 'dev' or 'prod' in your environment variables!")
         sys.exit(1)
