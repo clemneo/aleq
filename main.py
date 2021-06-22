@@ -1,4 +1,4 @@
-from dbhelper import DBHelper
+from dbhelper_postgresql import DBHelper
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters
 import logging
