@@ -80,7 +80,8 @@ class DBHelper:
         args = (group_id,)
         cursor = self.conn.cursor()
         id_name_dict = {}
-        for row in cursor.execute(stmt, args):
+        cursor.execute(stmt,args)
+        for row in cursor:
             id_name_dict[row[0]] = row[1]
 
         cursor.close()
@@ -108,7 +109,8 @@ class DBHelper:
         stmt = "SELECT user_id FROM users WHERE group_id = %s AND name = %s"
         args = (chat_id, name)
         cursor = self.conn.cursor()
-        user_id = [x[0] for x in cursor.execute(stmt, args)][0]
+        cursor.execute(stmt, args)
+        user_id = cursor.fetchone()[0]
         cursor.close()
         return user_id
 
