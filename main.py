@@ -53,6 +53,7 @@ def start(update, context):
     db = DBHelper()
     user_list = db.get_users(chat_id)
     timezone_offset = db.get_timezone(chat_id)
+    update.message.reply_text(str(user_list))
     if len(user_list) == 0:
         logger.info(str(user_list))
         update.message.reply_text(
