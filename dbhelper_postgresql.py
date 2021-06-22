@@ -9,7 +9,7 @@ class DBHelper:
 
     def setup(self):
         stmt1 = "CREATE TABLE IF NOT EXISTS user (" \
-                "user_id integer NOT NULL PRIMARY KEY, " \
+                "user_id INTEGER NOT NULL PRIMARY KEY, " \
                 "name TEXT NOT NULL, " \
                 "balance integer NOT NULL, " \
                 "group_id integer NOT NULL," \
