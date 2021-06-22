@@ -8,7 +8,7 @@ class DBHelper:
         self.conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
     def setup(self):
-        stmt1 = "CREATE TABLE IF NOT EXISTS user (" \
+        stmt1 = "CREATE TABLE IF NOT EXISTS users (" \
                 "user_id INTEGER NOT NULL PRIMARY KEY, " \
                 "name TEXT NOT NULL, " \
                 "balance integer NOT NULL, " \
@@ -31,20 +31,20 @@ class DBHelper:
                 "amount integer NOT NULL, " \
                 "group_id integer NOT NULL, " \
                 "settled_status integer NOT NULL," \
-                "FOREIGN KEY (payer_id) REFERENCES user (user_id)," \
-                "FOREIGN KEY (debtor_id) REFERENCES user (user_id))"
+                "FOREIGN KEY (payer_id) REFERENCES users (user_id)," \
+                "FOREIGN KEY (debtor_id) REFERENCES users (user_id))"
         stmt4 = "CREATE TABLE IF NOT EXISTS pending_settlements (" \
                 "ps_id integer NOT NULL PRIMARY KEY," \
                 "group_id integer NOT NULL," \
                 "sender_id integer NOT NULL," \
                 "receiver_id integer NOT NULL," \
                 "amount integer NOT NULL," \
-                "FOREIGN KEY (sender_id) REFERENCES user (user_id)," \
-                "FOREIGN KEY (receiver_id) REFERENCES user (user_id))"
+                "FOREIGN KEY (sender_id) REFERENCES users (user_id)," \
+                "FOREIGN KEY (receiver_id) REFERENCES users (user_id))"
         stmt5 = "CREATE TABLE IF NOT EXISTS timezone_offset (" \
                 "group_id integer NOT NULL," \
                 "offset_in_seconds integer NOT NULL," \
-                "FOREIGN KEY (group_id) REFERENCES user (group_id)" \
+                "FOREIGN KEY (group_id) REFERENCES users (group_id)" \
                 "UNIQUE (group_id))"
         cursor = self.conn.cursor()
         cursor.execute(stmt1)
@@ -58,7 +58,7 @@ class DBHelper:
     def get_users(self, group_id):
         """tuple list: Returns (x,y,z) where x[n] gives you user_id, y[n] gives you name, z[n] gives you balance"""
         """total list: Returns [(user_id1,username1,balance1),(user_id2,username2,balance2)...]"""
-        stmt = "SELECT user_id, name, balance FROM user WHERE group_id = (?)"
+        stmt = "SELECT user_id, name, balance FROM users WHERE group_id = (?)"
         args = (group_id,)
         cursor = self.conn.cursor()
         total_list = [x for x in cursor.execute(stmt, args)]
@@ -70,7 +70,7 @@ class DBHelper:
         return total_list
 
     def get_id_to_username_dict(self, group_id):
-        stmt = "SELECT user_id, name FROM user WHERE group_id = (?)"
+        stmt = "SELECT user_id, name FROM users WHERE group_id = (?)"
         args = (group_id,)
         cursor = self.conn.cursor()
         id_name_dict = {}
@@ -82,7 +82,7 @@ class DBHelper:
 
     def add_user(self, name, group_id):
         """Adds a user given a name (string) and group_id (int)"""
-        stmt = "INSERT INTO user (name, group_id,balance) VALUES ((?),(?),0)"
+        stmt = "INSERT INTO users (name, group_id,balance) VALUES ((?),(?),0)"
         args = (name, group_id,)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -91,7 +91,7 @@ class DBHelper:
 
     def remove_user(self, user_id):
         """Removes a user, but technically just sets the group_id to null"""
-        stmt = "UPDATE user SET group_id = NULL WHERE user_id = (?)"
+        stmt = "UPDATE users SET group_id = NULL WHERE user_id = (?)"
         args = (user_id,)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -99,7 +99,7 @@ class DBHelper:
         cursor.close()
 
     def get_user_id(self, chat_id, name):
-        stmt = "SELECT user_id FROM user WHERE group_id = (?) AND name = (?)"
+        stmt = "SELECT user_id FROM users WHERE group_id = (?) AND name = (?)"
         args = (chat_id, name)
         cursor = self.conn.cursor()
         user_id = [x[0] for x in cursor.execute(stmt, args)][0]
@@ -139,20 +139,20 @@ class DBHelper:
             args = (event_id, payer_id, debtor_id, payees[debtor_id], chat_id, 0)
             cursor.execute(stmt, args)
 
-            stmt2 = "UPDATE user SET balance = balance + (?) WHERE user_id = (?)"
+            stmt2 = "UPDATE users SET balance = balance + (?) WHERE user_id = (?)"
             args2 = (payees[debtor_id], debtor_id)
             cursor.execute(stmt2, args2)
 
             total_owed += payees[debtor_id]
 
-        stmt3 = "UPDATE user SET balance = balance - (?) WHERE user_id = (?)"
+        stmt3 = "UPDATE users SET balance = balance - (?) WHERE user_id = (?)"
         args3 = (total_owed, payer_id)
         cursor.execute(stmt3, args3)
         self.conn.commit()
 
         # todo: test repayments settled status update below
         if type == 1:
-            stmt4 = "SELECT balance FROM user WHERE group_id = (?)"
+            stmt4 = "SELECT balance FROM users WHERE group_id = (?)"
             args4 = (chat_id,)
             balances = [x[0] for x in self.conn.execute(stmt4, args4)]
             if all(b == 0 for b in balances):
@@ -223,7 +223,7 @@ class DBHelper:
         return outstanding_txns
 
     def get_balances(self, chat_id):
-        stmt = "SELECT * FROM user WHERE group_id = (?)"
+        stmt = "SELECT * FROM users WHERE group_id = (?)"
         args = (chat_id,)
         cursor = self.conn.cursor()
         user_dict = {}
@@ -277,7 +277,7 @@ def print_tables():
     db = DBHelper()
     db.setup()
 
-    df = pd.read_sql_query("Select * from user", db.conn)
+    df = pd.read_sql_query("Select * from users", db.conn)
     print(df.head(1000))
 
     df = pd.read_sql_query("Select * from event", db.conn)
