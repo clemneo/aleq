@@ -54,6 +54,7 @@ def start(update, context):
     user_list = db.get_users(chat_id)
     timezone_offset = db.get_timezone(chat_id)
     if len(user_list) == 0:
+        logger.info(user_list)
         update.message.reply_text(
             "Hello! Welcome to Alan's Equilibrium! \n" \
             "To begin, tell me your name!"
