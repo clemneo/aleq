@@ -9,14 +9,14 @@ class DBHelper:
 
     def setup(self):
         stmt1 = "CREATE TABLE IF NOT EXISTS users (" \
-                "user_id INTEGER NOT NULL PRIMARY KEY, " \
+                "user_id serial NOT NULL PRIMARY KEY, " \
                 "name TEXT NOT NULL, " \
                 "balance integer NOT NULL, " \
                 "group_id integer NOT NULL," \
                 "UNIQUE(group_id, name)" \
                 ")"
         stmt2 = "CREATE TABLE IF NOT EXISTS event (" \
-                "event_id integer NOT NULL PRIMARY KEY, " \
+                "event_id serial NOT NULL PRIMARY KEY, " \
                 "name TEXT NOT NULL, " \
                 "date integer NOT NULL, " \
                 "type integer NOT NULL, " \
@@ -24,7 +24,7 @@ class DBHelper:
                 "total integer NOT NULL)"
                 # type 0 transaction 1 repayment
         stmt3 = "CREATE TABLE IF NOT EXISTS txn (" \
-                "txn_id integer NOT NULL PRIMARY KEY, " \
+                "txn_id serial NOT NULL PRIMARY KEY, " \
                 "event_id integer NOT NULL," \
                 "payer_id integer NOT NULL, " \
                 "debtor_id integer NOT NULL, " \
@@ -34,7 +34,7 @@ class DBHelper:
                 "FOREIGN KEY (payer_id) REFERENCES users (user_id)," \
                 "FOREIGN KEY (debtor_id) REFERENCES users (user_id))"
         stmt4 = "CREATE TABLE IF NOT EXISTS pending_settlements (" \
-                "ps_id integer NOT NULL PRIMARY KEY," \
+                "ps_id serial NOT NULL PRIMARY KEY," \
                 "group_id integer NOT NULL," \
                 "sender_id integer NOT NULL," \
                 "receiver_id integer NOT NULL," \
