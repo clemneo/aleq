@@ -57,7 +57,7 @@ class DBHelper:
     def get_users(self, group_id):
         """tuple list: Returns (x,y,z) where x[n] gives you user_id, y[n] gives you name, z[n] gives you balance"""
         """total list: Returns [(user_id1,username1,balance1),(user_id2,username2,balance2)...]"""
-        stmt = "SELECT user_id, name, balance FROM users WHERE group_id = (?)"
+        stmt = "SELECT user_id, name, balance FROM users WHERE group_id = %s"
         args = (group_id,)
         cursor = self.conn.cursor()
         total_list = [x for x in cursor.execute(stmt, args)]
@@ -69,7 +69,7 @@ class DBHelper:
         return total_list
 
     def get_id_to_username_dict(self, group_id):
-        stmt = "SELECT user_id, name FROM users WHERE group_id = (?)"
+        stmt = "SELECT user_id, name FROM users WHERE group_id = %s"
         args = (group_id,)
         cursor = self.conn.cursor()
         id_name_dict = {}
@@ -81,7 +81,7 @@ class DBHelper:
 
     def add_user(self, name, group_id):
         """Adds a user given a name (string) and group_id (int)"""
-        stmt = "INSERT INTO users (name, group_id,balance) VALUES ((?),(?),0)"
+        stmt = "INSERT INTO users (name, group_id,balance) VALUES (%s,%s,0)"
         args = (name, group_id,)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -90,7 +90,7 @@ class DBHelper:
 
     def remove_user(self, user_id):
         """Removes a user, but technically just sets the group_id to null"""
-        stmt = "UPDATE users SET group_id = NULL WHERE user_id = (?)"
+        stmt = "UPDATE users SET group_id = NULL WHERE user_id = %s"
         args = (user_id,)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -98,7 +98,7 @@ class DBHelper:
         cursor.close()
 
     def get_user_id(self, chat_id, name):
-        stmt = "SELECT user_id FROM users WHERE group_id = (?) AND name = (?)"
+        stmt = "SELECT user_id FROM users WHERE group_id = %s AND name = %s"
         args = (chat_id, name)
         cursor = self.conn.cursor()
         user_id = [x[0] for x in cursor.execute(stmt, args)][0]
@@ -106,7 +106,7 @@ class DBHelper:
         return user_id
 
     def set_timezone_for_group(self, chat_id, offset):
-        stmt = "INSERT INTO timezone_offset (group_id, offset_in_seconds) VALUES ((?),(?))"
+        stmt = "INSERT INTO timezone_offset (group_id, offset_in_seconds) VALUES (%s,%s)"
         args = (chat_id, offset)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -114,7 +114,7 @@ class DBHelper:
         cursor.close()
 
     def get_timezone(self, chat_id):
-        stmt = "SELECT offset_in_seconds FROM timezone_offset WHERE group_id = (?)"
+        stmt = "SELECT offset_in_seconds FROM timezone_offset WHERE group_id = %s"
         args = (chat_id,)
         cursor = self.conn.cursor()
         object = [x for x in cursor.execute(stmt, args)]
@@ -124,7 +124,7 @@ class DBHelper:
         return object
 
     def add_event(self, chat_id, name, date, type, total, payer_id, payees):
-        stmt = "INSERT INTO event (name, date, type, group_id, total) VALUES ((?),(?),(?),(?),(?))"
+        stmt = "INSERT INTO event (name, date, type, group_id, total) VALUES (%s,%s,%s,%s,%s)"
         args = (name, date, type, chat_id, total)
 
         cursor = self.conn.cursor()
@@ -134,28 +134,28 @@ class DBHelper:
 
         for debtor_id in payees:
             stmt = "INSERT INTO txn (event_id, payer_id, debtor_id, amount, group_id, settled_status)" + \
-                   " VALUES ((?),(?),(?),(?),(?),(?))"
+                   " VALUES (%s,%s,%s,%s,%s,%s)"
             args = (event_id, payer_id, debtor_id, payees[debtor_id], chat_id, 0)
             cursor.execute(stmt, args)
 
-            stmt2 = "UPDATE users SET balance = balance + (?) WHERE user_id = (?)"
+            stmt2 = "UPDATE users SET balance = balance + %s WHERE user_id = %s"
             args2 = (payees[debtor_id], debtor_id)
             cursor.execute(stmt2, args2)
 
             total_owed += payees[debtor_id]
 
-        stmt3 = "UPDATE users SET balance = balance - (?) WHERE user_id = (?)"
+        stmt3 = "UPDATE users SET balance = balance - %s WHERE user_id = %s"
         args3 = (total_owed, payer_id)
         cursor.execute(stmt3, args3)
         self.conn.commit()
 
         # todo: test repayments settled status update below
         if type == 1:
-            stmt4 = "SELECT balance FROM users WHERE group_id = (?)"
+            stmt4 = "SELECT balance FROM users WHERE group_id = %s"
             args4 = (chat_id,)
             balances = [x[0] for x in self.conn.execute(stmt4, args4)]
             if all(b == 0 for b in balances):
-                stmt5 = "UPDATE txn SET settled_status = 1 WHERE group_id = (?) AND settled_status = 0"
+                stmt5 = "UPDATE txn SET settled_status = 1 WHERE group_id = %s AND settled_status = 0"
                 args5 = (chat_id,)
                 cursor.execute(stmt5, args5)
                 self.conn.commit()
@@ -163,7 +163,7 @@ class DBHelper:
         cursor.close()
 
     def get_event_by_id(self, event_id):
-        stmt = "SELECT * FROM event WHERE event_id = (?)"
+        stmt = "SELECT * FROM event WHERE event_id = %s"
         args = (event_id,)
         cursor = self.conn.cursor()
         sql_object = [x for x in cursor.execute(stmt, args)]
@@ -176,7 +176,7 @@ class DBHelper:
         return (name, date, type, total, group_id)
 
     def get_ten_events_by_chat_id(self, chat_id):
-        stmt = "SELECT * FROM event WHERE group_id = (?) ORDER BY event_id DESC LIMIT 10"
+        stmt = "SELECT * FROM event WHERE group_id = %s ORDER BY event_id DESC LIMIT 10"
         args = (chat_id,)
         cursor = self.conn.cursor()
         sql_object = [x for x in cursor.execute(stmt, args)]
@@ -185,7 +185,7 @@ class DBHelper:
         # [(event_id, name, date, type, group_id, total), ]
 
     def get_txns_by_event_id(self, event_id):
-        stmt = "SELECT * FROM txn WHERE event_id = (?)"
+        stmt = "SELECT * FROM txn WHERE event_id = %s"
         args = (event_id,)
         cursor = self.conn.cursor()
         sql_object = [x for x in cursor.execute(stmt, args)]
@@ -199,7 +199,7 @@ class DBHelper:
         return txn_list
 
     def settle_txn(self, chat_id):
-        stmt = "UPDATE txn SET settled_status = 1 WHERE group_id = (?)"
+        stmt = "UPDATE txn SET settled_status = 1 WHERE group_id = %s"
         args = (chat_id,)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -207,7 +207,7 @@ class DBHelper:
         cursor.close()
 
     def get_outstanding_txn(self, chat_id):
-        stmt = "SELECT * FROM txn WHERE group_id = (?) AND settled_status = 0"
+        stmt = "SELECT * FROM txn WHERE group_id = %s AND settled_status = 0"
         args = (chat_id,)
         cursor = self.conn.cursor()
         sql_object = [x for x in cursor.execute(stmt, args)]
@@ -222,7 +222,7 @@ class DBHelper:
         return outstanding_txns
 
     def get_balances(self, chat_id):
-        stmt = "SELECT * FROM users WHERE group_id = (?)"
+        stmt = "SELECT * FROM users WHERE group_id = %s"
         args = (chat_id,)
         cursor = self.conn.cursor()
         user_dict = {}
@@ -234,7 +234,7 @@ class DBHelper:
         return user_dict
 
     def add_ps(self, chat_id, sender_id, receiver_id, amount):
-        stmt = "INSERT INTO pending_settlements (group_id, sender_id, receiver_id, amount) VALUES ((?),(?),(?),(?))"
+        stmt = "INSERT INTO pending_settlements (group_id, sender_id, receiver_id, amount) VALUES (%s,%s,%s,%s)"
         args = (chat_id, sender_id, receiver_id, amount)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -242,7 +242,7 @@ class DBHelper:
         cursor.close()
 
     def get_ps(self, chat_id):
-        stmt = "SELECT * FROM pending_settlements WHERE group_id = (?)"
+        stmt = "SELECT * FROM pending_settlements WHERE group_id = %s"
         args = (chat_id,)
         cursor = self.conn.cursor()
         ps_dict = {}
@@ -257,7 +257,7 @@ class DBHelper:
         return ps_dict
 
     def delete_ps(self, ps_id):
-        stmt = "DELETE FROM pending_settlements WHERE ps_id = (?)"
+        stmt = "DELETE FROM pending_settlements WHERE ps_id = %s"
         args = (ps_id,)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
@@ -265,7 +265,7 @@ class DBHelper:
         cursor.close()
 
     def clear_ps_by_group(self, chat_id):
-        stmt = "DELETE FROM pending_settlements WHERE group_id = (?)"
+        stmt = "DELETE FROM pending_settlements WHERE group_id = %s"
         args = (chat_id,)
         cursor = self.conn.cursor()
         cursor.execute(stmt, args)
