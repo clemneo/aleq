@@ -60,11 +60,13 @@ class DBHelper:
         stmt = "SELECT user_id, name, balance FROM users WHERE group_id = %s"
         args = (group_id,)
         cursor = self.conn.cursor()
+        total_list = []
         try:
             cursor.execute(stmt, args)
-            total_list = cursor.fetchall()
+            for record in cursor:
+                total_list.append(record)
+            #total_list = cursor.fetchall()
         except:
-            total_list = []
             print("returning empty list")
         #user_id_list = [x[0] for x in total_list]
         #name_list = [x[1] for x in total_list]
