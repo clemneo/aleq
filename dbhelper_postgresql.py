@@ -61,8 +61,8 @@ class DBHelper:
         args = (group_id,)
         cursor = self.conn.cursor()
         try:
-            print("success")
-            total_list = [x for x in cursor.execute(stmt, args)]
+            cursor.execute(stmt, args)
+            total_list = cursor.fetchall()
         except:
             total_list = []
             print("returning empty list")
