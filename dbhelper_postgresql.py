@@ -44,7 +44,7 @@ class DBHelper:
         stmt5 = "CREATE TABLE IF NOT EXISTS timezone_offset (" \
                 "group_id integer NOT NULL," \
                 "offset_in_seconds integer NOT NULL," \
-                "FOREIGN KEY (group_id) REFERENCES users (group_id)" \
+                "FOREIGN KEY (group_id) REFERENCES users (group_id)," \
                 "UNIQUE(group_id))"
         cursor = self.conn.cursor()
         cursor.execute(stmt1)
