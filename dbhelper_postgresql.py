@@ -60,7 +60,10 @@ class DBHelper:
         stmt = "SELECT user_id, name, balance FROM users WHERE group_id = %s"
         args = (group_id,)
         cursor = self.conn.cursor()
-        total_list = [x for x in cursor.execute(stmt, args)]
+        try:
+            total_list = [x for x in cursor.execute(stmt, args)]
+        except:
+            total_list = []
         #user_id_list = [x[0] for x in total_list]
         #name_list = [x[1] for x in total_list]
         #balance_list = [x[2] for x in total_list]
@@ -117,7 +120,10 @@ class DBHelper:
         stmt = "SELECT offset_in_seconds FROM timezone_offset WHERE group_id = %s"
         args = (chat_id,)
         cursor = self.conn.cursor()
-        object = [x for x in cursor.execute(stmt, args)]
+        try:
+            object = [x for x in cursor.execute(stmt, args)]
+        except:
+            object = []
 
         cursor.close()
         # [(seconds_offset, )]
@@ -179,7 +185,10 @@ class DBHelper:
         stmt = "SELECT * FROM event WHERE group_id = %s ORDER BY event_id DESC LIMIT 10"
         args = (chat_id,)
         cursor = self.conn.cursor()
-        sql_object = [x for x in cursor.execute(stmt, args)]
+        try:
+            sql_object = [x for x in cursor.execute(stmt, args)]
+        except:
+            sql_object = [(0, "No Transactions Yet", "", "", "", "")]
         cursor.close()
         return sql_object
         # [(event_id, name, date, type, group_id, total), ]
@@ -210,7 +219,11 @@ class DBHelper:
         stmt = "SELECT * FROM txn WHERE group_id = %s AND settled_status = 0"
         args = (chat_id,)
         cursor = self.conn.cursor()
-        sql_object = [x for x in cursor.execute(stmt, args)]
+        try:
+            sql_object = [x for x in cursor.execute(stmt, args)]
+        except:
+            sql_object = []
+
         outstanding_txns = {}
         for tp in sql_object:
             if tp[1] not in outstanding_txns:
