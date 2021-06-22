@@ -61,9 +61,11 @@ class DBHelper:
         args = (group_id,)
         cursor = self.conn.cursor()
         try:
+            print("success")
             total_list = [x for x in cursor.execute(stmt, args)]
         except:
             total_list = []
+            print("returning empty list")
         #user_id_list = [x[0] for x in total_list]
         #name_list = [x[1] for x in total_list]
         #balance_list = [x[2] for x in total_list]
