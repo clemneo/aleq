@@ -125,7 +125,8 @@ class DBHelper:
         args = (chat_id,)
         cursor = self.conn.cursor()
         try:
-            object = [x for x in cursor.execute(stmt, args)]
+            cursor.execute(stmt, args)
+            object = cursor.fetchall()
         except:
             object = []
 
