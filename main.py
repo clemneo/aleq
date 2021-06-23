@@ -707,7 +707,7 @@ def see_event(update, context):
         event_data = db.get_event_by_id(event_id)
         reply_string = "Showing <Item " + msg + ">..."
         reply_string += "\nName: " + event_data[0]
-        dt = datetime.datetime.fromtimestamp(event[1])
+        dt = datetime.datetime.fromtimestamp(event_data[1])
         dt_string = dt.strftime('%d/%m/%Y')
         reply_string += "\nDate: " + dt_string
         if event_data[2] == 0: # if its a purchase
