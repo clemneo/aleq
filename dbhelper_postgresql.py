@@ -166,11 +166,14 @@ class DBHelper:
         cursor.execute(stmt3, args3)
         self.conn.commit()
 
-        # todo: test repayments settled status update below
         if type == 1:
             stmt4 = "SELECT balance FROM users WHERE group_id = %s"
             args4 = (chat_id,)
-            balances = [x[0] for x in self.conn.execute(stmt4, args4)]
+
+            cursor.execute(stmt4, args4)
+            balances = cursor.fetchall()
+            print(balances)
+            print("TESTETESTESTSETT")
             if all(b == 0 for b in balances):
                 stmt5 = "UPDATE txn SET settled_status = 1 WHERE group_id = %s AND settled_status = 0"
                 args5 = (chat_id,)
