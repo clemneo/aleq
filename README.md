@@ -1,4 +1,4 @@
-# aleq
+# Alan's Equilibrium
 A Telegram Bot to help friends who constantly owe each other money
 
 I wrote this telegram bot to keep track of tabs in friend-groups. When we go out with friends, different purchases/meals may be paid for by different people.
